@@ -77,7 +77,7 @@ h1 em{font-style:normal;color:var(--p)}
 .psec.on{display:block}
 
 /* paypal */
-#ppw{min-height:46px;display:flex;align-items:center;justify-content:center}
+#ppw{min-height:50px}
 .spin{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--p);border-radius:50%;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 
@@ -241,7 +241,7 @@ h1 em{font-style:normal;color:var(--p)}
 
           <!-- UPI ID to copy -->
           <div class="upi-id-box">
-            <span class="upi-id-val" id="upi-display">amarjeet@ybl</span>
+            <span class="upi-id-val" id="upi-display">8369726355@jio</span>
             <button class="copy-btn" id="copy-upi">Copy</button>
           </div>
 
@@ -421,8 +421,16 @@ paypal.Buttons({
   onApprove:function(data){activatePro(getEmail(),data.subscriptionID);},
   onError:function(err){console.error('PayPal:',err);}
 }).render('#ppw').then(function(){
-  document.getElementById('ppw').style.minHeight='unset';
-  document.getElementById('ppw').style.display='block';
+  // Remove spinner, reset container
+  var ppw = document.getElementById('ppw');
+  ppw.style.minHeight = 'unset';
+  ppw.style.display = 'block';
+  var spin = ppw.querySelector('.spin');
+  if (spin) spin.remove();
+}).catch(function(err) {
+  // PayPal failed to load (e.g. ad blocker) - show manual link
+  var ppw = document.getElementById('ppw');
+  ppw.innerHTML = '<a href="https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-0R5769700G883425MNHAMIZQ" target="_blank" style="display:block;padding:13px;background:#FFC439;color:#003087;border-radius:9px;font-weight:700;font-size:14px;text-align:center;text-decoration:none;font-family:inherit">Pay with PayPal →</a>';
 });
 </script>
 </body>
