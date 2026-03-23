@@ -4,115 +4,103 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Upgrade to Pro — NotebookLM Exporter</title>
-<!-- Stripe.js loads here because this is a normal webpage, not extension page -->
-<script src="https://js.stripe.com/v3/"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--p:#6366f1;--pd:#4f46e5;--pl:#ede9fe;--tx:#0f0e17;--mu:#6b7280;--bd:#e5e7eb;--bg:#fafaf9}
+html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
-body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(99,102,241,.1) 0%,transparent 70%);pointer-events:none}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(99,102,241,.1) 0%,transparent 70%);pointer-events:none;z-index:0}
 
-/* Header */
-.header{padding:18px 40px;background:rgba(255,255,255,.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.header{padding:16px 40px;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
 .logo{display:flex;align-items:center;gap:9px;font-family:'DM Serif Display',serif;font-size:17px;color:var(--tx);text-decoration:none}
-.ldot{width:28px;height:28px;background:linear-gradient(135deg,var(--p),#a855f7);border-radius:7px;display:flex;align-items:center;justify-content:center}
-.back-link{font-size:13px;color:var(--mu);text-decoration:none;display:flex;align-items:center;gap:5px}
-.back-link:hover{color:var(--tx)}
+.ldot{width:28px;height:28px;background:linear-gradient(135deg,#6366f1,#a855f7);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.secure-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mu);background:#f0fdf4;border:1px solid #bbf7d0;border-radius:20px;padding:5px 12px}
 
-/* Layout */
-.page{max-width:1000px;margin:0 auto;padding:48px 24px;display:grid;grid-template-columns:1fr 420px;gap:32px;align-items:start}
+.page{max-width:1020px;margin:0 auto;padding:48px 24px;display:grid;grid-template-columns:1fr 400px;gap:36px;align-items:start;position:relative;z-index:1}
 
 /* Left */
-.eyebrow{font-size:11px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px}
-h1{font-family:'DM Serif Display',serif;font-size:42px;line-height:1.1;margin-bottom:12px}
+.eyebrow{font-size:11px;font-weight:700;color:var(--p);text-transform:uppercase;letter-spacing:.08em;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+h1{font-family:'DM Serif Display',serif;font-size:40px;line-height:1.1;margin-bottom:12px}
 h1 em{font-style:italic;color:var(--p)}
-.tagline{font-size:16px;color:var(--mu);line-height:1.6;margin-bottom:36px;font-weight:300}
+.tagline{font-size:15px;color:var(--mu);line-height:1.6;margin-bottom:32px;font-weight:300}
 
-.feat-list{display:flex;flex-direction:column;gap:14px;margin-bottom:32px}
-.feat{display:flex;align-items:flex-start;gap:12px}
-.ck{width:22px;height:22px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#16a34a;flex-shrink:0;margin-top:2px}
-.feat h4{font-size:14px;font-weight:600;margin-bottom:3px}
+.feat-list{display:flex;flex-direction:column;gap:13px;margin-bottom:32px}
+.feat{display:flex;align-items:flex-start;gap:11px}
+.ck{width:20px;height:20px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.feat h4{font-size:14px;font-weight:600;margin-bottom:2px}
 .feat p{font-size:12px;color:var(--mu);line-height:1.4}
 
-.compare{border:1px solid var(--bd);border-radius:14px;overflow:hidden;background:#fff}
-.crow{display:grid;grid-template-columns:1fr 80px 80px;padding:10px 16px;border-bottom:1px solid var(--bd);font-size:13px;align-items:center}
+.compare{border:1px solid var(--bd);border-radius:14px;overflow:hidden;background:#fff;margin-bottom:24px}
+.crow{display:grid;grid-template-columns:1fr 70px 80px;padding:10px 16px;border-bottom:1px solid var(--bd);font-size:13px;align-items:center}
 .crow:last-child{border-bottom:none}
-.crow.hdr{background:var(--bg);font-size:11px;font-weight:700;color:#9ca3af;text-transform:uppercase}
-.cv{text-align:center;color:#9ca3af;font-size:13px}
-.cv.pro{color:#10b981;font-weight:700}
+.crow.hdr{background:#f9f9f8;font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.04em}
+.cv{text-align:center;color:#9ca3af;font-size:12px}
+.cv.pro{color:#10b981;font-weight:700;font-size:13px}
 
-/* Right: Payment card */
-.pay-card{background:#fff;border:1px solid var(--bd);border-radius:22px;padding:32px;box-shadow:0 8px 40px rgba(0,0,0,.07);position:sticky;top:90px}
+/* Accepted cards strip */
+.cards-strip{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cards-strip-label{font-size:12px;color:var(--mu);font-weight:500;margin-right:4px}
 
-.price-row{display:flex;align-items:baseline;gap:6px;margin-bottom:4px}
-.price-num{font-family:'DM Serif Display',serif;font-size:48px;color:var(--tx);line-height:1}
-.price-per{font-size:15px;color:var(--mu)}
-.price-note{font-size:11px;color:#9ca3af;margin-bottom:22px}
-.divider{height:1px;background:var(--bd);margin:20px 0}
+/* Right: payment card */
+.pay-card{background:#fff;border:1px solid var(--bd);border-radius:22px;padding:30px;box-shadow:0 8px 40px rgba(0,0,0,.07);position:sticky;top:80px}
 
-/* Form */
+.price-row{display:flex;align-items:baseline;gap:6px;margin-bottom:3px}
+.price-big{font-family:'DM Serif Display',serif;font-size:50px;color:var(--tx);line-height:1}
+.price-per{font-size:15px;color:var(--mu);font-weight:300}
+.price-note{font-size:11px;color:#9ca3af;margin-bottom:20px}
+.divider{height:1px;background:var(--bd);margin:18px 0}
+
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:5px}
 .field input{width:100%;padding:11px 13px;border:1.5px solid var(--bd);border-radius:9px;font-size:14px;font-family:inherit;background:var(--bg);color:var(--tx);outline:none;transition:border-color .2s}
 .field input:focus{border-color:var(--p)}
-.field input.err-inp{border-color:#dc2626}
+.field input.err{border-color:#dc2626}
 
-/* Payment method tabs */
-.pay-tabs{display:flex;gap:8px;margin-bottom:18px}
-.pay-tab{flex:1;padding:10px 8px;border:1.5px solid var(--bd);border-radius:9px;background:#fff;font-size:12px;font-weight:600;font-family:inherit;color:var(--mu);cursor:pointer;transition:all .15s;text-align:center}
-.pay-tab:hover{border-color:var(--p);color:var(--p)}
-.pay-tab.active{background:var(--pl);border-color:var(--p);color:var(--pd)}
-.pay-tab-icon{font-size:16px;display:block;margin-bottom:3px}
+/* Main PayPal button */
+.pp-main-btn{width:100%;padding:15px;background:#FFC439;color:#003087;border:none;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:all .2s;margin-bottom:10px;letter-spacing:.01em}
+.pp-main-btn:hover{background:#f0b429;transform:translateY(-1px);box-shadow:0 4px 16px rgba(255,196,57,.4)}
+.pp-main-btn:active{transform:translateY(0)}
+.pp-main-btn:disabled{background:#e5e7eb;color:#9ca3af;cursor:not-allowed;transform:none;box-shadow:none}
 
-.pay-section{display:none}
-.pay-section.active{display:block}
+/* PayPal logo SVG inline */
+.pp-logo-svg{height:20px;width:auto}
 
-/* Stripe card element */
-#card-element{padding:12px 13px;border:1.5px solid var(--bd);border-radius:9px;background:var(--bg);transition:border-color .2s;margin-bottom:14px}
-#card-element.StripeElement--focus{border-color:var(--p)}
-#card-errors{font-size:12px;color:#dc2626;margin-bottom:12px;min-height:16px}
+.or-divider{display:flex;align-items:center;gap:10px;margin:12px 0;font-size:11px;color:#9ca3af}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--bd)}
 
-/* PayPal section */
-.pp-section-note{font-size:13px;color:var(--mu);margin-bottom:14px;line-height:1.5}
-.pp-btn-custom{width:100%;padding:13px;background:#0070ba;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px}
-.pp-btn-custom:hover{background:#005ea6}
-.pp-logo{font-size:17px;font-weight:900;letter-spacing:-1px}
-.pp-logo .b{color:#003087}
-.pp-logo .l{color:#009cde}
+/* Cards accepted row */
+.cards-row{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.card-chip{display:flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:5px 9px;font-size:11px;font-weight:600;color:#374151}
+.card-chip svg{flex-shrink:0}
 
-/* UPI section */
-.upi-note{font-size:13px;color:var(--mu);margin-bottom:14px;line-height:1.5}
+.secure-row{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;color:#9ca3af;margin-top:12px;flex-wrap:wrap}
 
-/* Submit button */
-.pay-btn{width:100%;padding:14px;background:var(--p);color:#fff;border:none;border-radius:11px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
-.pay-btn:hover{background:var(--pd);transform:translateY(-1px)}
-.pay-btn:disabled{background:#9ca3af;cursor:not-allowed;transform:none}
-.spin{width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;display:none}
-@keyframes sp{to{transform:rotate(360deg)}}
-
-.secure-row{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11px;color:#9ca3af;margin-top:12px}
-
-/* Confirm sub ID box (post-PayPal) */
-.confirm-box{background:#fafaf9;border:1px solid var(--bd);border-radius:10px;padding:14px;margin-top:14px;display:none}
+/* Confirm box */
+.confirm-box{background:#f0fdf4;border:1px solid #86efac;border-radius:11px;padding:16px;margin-top:14px;display:none}
 .confirm-box.show{display:block}
-.confirm-box p{font-size:12px;color:var(--mu);line-height:1.5;margin-bottom:8px}
-.confirm-box input{width:100%;padding:9px 11px;border:1.5px solid var(--bd);border-radius:7px;font-size:13px;font-family:inherit;margin-bottom:8px;outline:none}
-.confirm-box input:focus{border-color:var(--p)}
-.activate-btn{width:100%;padding:10px;background:#10b981;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit}
-.activate-btn:hover{background:#059669}
+.confirm-box h4{font-size:13px;font-weight:600;color:#166534;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.confirm-box p{font-size:12px;color:#166534;line-height:1.5;margin-bottom:10px;opacity:.85}
+.confirm-box input{width:100%;padding:9px 11px;border:1.5px solid #86efac;border-radius:7px;font-size:13px;font-family:inherit;margin-bottom:10px;outline:none;background:#fff;color:var(--tx)}
+.confirm-box input:focus{border-color:#16a34a}
+.activate-btn{width:100%;padding:11px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.activate-btn:hover{background:#15803d}
+.activate-btn:disabled{background:#9ca3af;cursor:not-allowed}
 
 /* Success */
 #success{display:none;text-align:center;padding:20px 0}
-.ok-emoji{font-size:44px;margin-bottom:16px}
+.ok-emoji{font-size:48px;margin-bottom:16px;animation:pop .5s cubic-bezier(.34,1.56,.64,1)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
 #success h2{font-family:'DM Serif Display',serif;font-size:28px;margin-bottom:10px}
-#success p{font-size:14px;color:var(--mu);line-height:1.6;margin-bottom:22px;max-width:300px;margin-left:auto;margin-right:auto}
-.close-tab{background:none;border:none;font-size:13px;color:var(--mu);cursor:pointer;font-family:inherit;text-decoration:underline}
+#success p{font-size:13px;color:var(--mu);line-height:1.6;margin-bottom:20px;max-width:280px;margin-left:auto;margin-right:auto}
+.close-btn{background:none;border:1.5px solid var(--bd);border-radius:8px;font-size:13px;color:var(--mu);cursor:pointer;font-family:inherit;padding:9px 20px;transition:all .2s}
+.close-btn:hover{border-color:var(--p);color:var(--p)}
 
 @media(max-width:768px){
   .page{grid-template-columns:1fr;padding:24px 16px}
   .pay-card{position:static}
   h1{font-size:32px}
+  .header{padding:14px 20px}
 }
 </style>
 </head>
@@ -120,47 +108,89 @@ h1 em{font-style:italic;color:var(--p)}
 
 <div class="header">
   <a class="logo" href="#">
-    <div class="ldot"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 9.5L9.5 2.5M9.5 2.5H5M9.5 2.5V8" stroke="white" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="ldot">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 9.5L9.5 2.5M9.5 2.5H5M9.5 2.5V8" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
     NotebookLM Exporter
   </a>
-  <a class="back-link" href="javascript:history.back()">← Back</a>
+  <div class="secure-badge">
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1L1.5 3.25V6.5C1.5 9.04 3.5 11.13 6 11.5C8.5 11.13 10.5 9.04 10.5 6.5V3.25L6 1Z" fill="#16a34a" opacity=".2"/><path d="M6 1L1.5 3.25V6.5C1.5 9.04 3.5 11.13 6 11.5C8.5 11.13 10.5 9.04 10.5 6.5V3.25L6 1Z" stroke="#16a34a" stroke-width="1" fill="none"/><path d="M3.5 6.5L5.5 8.5L8.5 4.5" stroke="#16a34a" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Secured by PayPal
+  </div>
 </div>
 
 <div class="page">
 
-  <!-- Left: features -->
+  <!-- Left -->
   <div>
-    <div class="eyebrow">✦ Go Pro</div>
+    <div class="eyebrow">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1l1.5 3 3.5.5-2.5 2.5.5 3.5L6 9l-3 1.5.5-3.5L1 4.5l3.5-.5z" fill="#6366f1"/></svg>
+      Go Pro
+    </div>
     <h1>Unlock <em>unlimited</em><br>exports</h1>
-    <p class="tagline">Everything you need to make NotebookLM your second brain — one small subscription.</p>
+    <p class="tagline">Everything you need to make NotebookLM your second brain — for less than a coffee a month.</p>
 
     <div class="feat-list">
-      <div class="feat"><div class="ck">✓</div><div><h4>Unlimited daily exports</h4><p>No caps. Export as many chats as you want, every day.</p></div></div>
-      <div class="feat"><div class="ck">✓</div><div><h4>Full export history</h4><p>Every conversation you've ever saved, searchable and organized.</p></div></div>
-      <div class="feat"><div class="ck">✓</div><div><h4>Dashboard access</h4><p>Visual overview of all notebooks and sources in one place.</p></div></div>
-      <div class="feat"><div class="ck">✓</div><div><h4>Priority support</h4><p>Direct help within 24 hours from the creator.</p></div></div>
-      <div class="feat"><div class="ck">✓</div><div><h4>Early access to new features</h4><p>Auto-export rules, batch export, highlight & clip — coming soon.</p></div></div>
+      <div class="feat">
+        <div class="ck"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><h4>Unlimited daily exports</h4><p>No caps. Export as many chats as you want, every single day.</p></div>
+      </div>
+      <div class="feat">
+        <div class="ck"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><h4>Full export history</h4><p>Every conversation you've saved, searchable and organized forever.</p></div>
+      </div>
+      <div class="feat">
+        <div class="ck"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><h4>Dashboard access</h4><p>Visual overview of all your notebooks and sources in one place.</p></div>
+      </div>
+      <div class="feat">
+        <div class="ck"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><h4>Priority support</h4><p>Direct help within 24 hours from the creator.</p></div>
+      </div>
+      <div class="feat">
+        <div class="ck"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div><h4>Early access to new features</h4><p>Auto-export rules, batch export, highlight &amp; clip — coming soon.</p></div>
+      </div>
     </div>
 
     <div class="compare">
       <div class="crow hdr"><span>Feature</span><span class="cv">Free</span><span class="cv pro">Pro</span></div>
-      <div class="crow"><span>Daily exports</span><span class="cv">10</span><span class="cv pro">∞</span></div>
-      <div class="crow"><span>Export history</span><span class="cv">7 days</span><span class="cv pro">Full</span></div>
+      <div class="crow"><span>Daily exports</span><span class="cv">10/day</span><span class="cv pro">∞ Unlimited</span></div>
+      <div class="crow"><span>Export history</span><span class="cv">7 days</span><span class="cv pro">Full history</span></div>
       <div class="crow"><span>Dashboard</span><span class="cv">—</span><span class="cv pro">✓</span></div>
-      <div class="crow"><span>NLM buttons</span><span class="cv">—</span><span class="cv pro">✓</span></div>
+      <div class="crow"><span>NLM extra buttons</span><span class="cv">—</span><span class="cv pro">✓</span></div>
       <div class="crow"><span>Priority support</span><span class="cv">—</span><span class="cv pro">✓</span></div>
+    </div>
+
+    <!-- Cards accepted strip -->
+    <div class="cards-strip">
+      <span class="cards-strip-label">We accept:</span>
+      <!-- Visa -->
+      <svg height="24" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="24" rx="4" fill="#1A1F71"/><path d="M22.5 16.5H19.8L21.6 7.5H24.3L22.5 16.5Z" fill="white"/><path d="M31.8 7.7C31.2 7.5 30.3 7.3 29.2 7.3C26.6 7.3 24.8 8.6 24.8 10.5C24.8 11.9 26.1 12.7 27.1 13.2C28.1 13.7 28.4 14 28.4 14.4C28.4 15 27.7 15.3 27 15.3C26 15.3 25.5 15.1 24.6 14.7L24.2 14.5L23.8 17C24.5 17.3 25.8 17.6 27.1 17.6C29.9 17.6 31.6 16.3 31.6 14.3C31.6 13.2 30.9 12.4 29.4 11.7C28.5 11.2 27.9 10.9 27.9 10.5C27.9 10.1 28.4 9.7 29.4 9.7C30.2 9.7 30.8 9.9 31.3 10.1L31.6 10.2L32 7.8L31.8 7.7Z" fill="white"/><path d="M35.5 13.4C35.7 12.9 36.5 10.8 36.5 10.8C36.5 10.8 36.7 10.2 36.8 9.8L37 10.7C37 10.7 37.5 12.9 37.7 13.9H35.5V13.4ZM38.8 7.5H36.8C36.2 7.5 35.7 7.7 35.5 8.3L31.8 16.5H34.6C34.6 16.5 35.1 15.2 35.2 14.9H38.6C38.7 15.3 38.9 16.5 38.9 16.5H41.5L38.8 7.5Z" fill="white"/><path d="M17.3 7.5L14.8 13.6L14.5 12.2C14 10.7 12.6 9.1 11 8.2L13.3 16.5H16.1L20.1 7.5H17.3Z" fill="white"/><path d="M12.5 7.5H8.1L8 7.7C11.5 8.6 13.9 10.7 14.5 12.2L13.8 8.3C13.7 7.7 13.2 7.5 12.5 7.5Z" fill="#F9A533"/></svg>
+      <!-- Mastercard -->
+      <svg height="24" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="24" rx="4" fill="#252525"/><circle cx="23" cy="12" r="7" fill="#EB001B"/><circle cx="37" cy="12" r="7" fill="#F79E1B"/><path d="M30 6.8C31.7 8 32.8 9.9 32.8 12C32.8 14.1 31.7 16 30 17.2C28.3 16 27.2 14.1 27.2 12C27.2 9.9 28.3 8 30 6.8Z" fill="#FF5F00"/></svg>
+      <!-- Amex -->
+      <svg height="24" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="24" rx="4" fill="#2E77BC"/><text x="8" y="16.5" font-family="Arial" font-weight="700" font-size="10" fill="white">AMEX</text></svg>
+      <!-- Discover -->
+      <svg height="24" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="24" rx="4" fill="#fff" stroke="#e5e7eb"/><text x="6" y="15.5" font-family="Arial" font-weight="700" font-size="8.5" fill="#231F20">DISCOVER</text><circle cx="48" cy="12" r="8" fill="#F76F20"/></svg>
+      <!-- UnionPay -->
+      <svg height="24" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="24" rx="4" fill="#fff" stroke="#e5e7eb"/><rect x="6" y="4" width="10" height="16" rx="2" fill="#C0392B"/><rect x="18" y="4" width="10" height="16" rx="2" fill="#1A6BB5"/><text x="31" y="15.5" font-family="Arial" font-weight="700" font-size="7.5" fill="#333">UnionPay</text></svg>
+      <!-- PayPal -->
+      <svg height="24" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="24" rx="4" fill="#fff" stroke="#e5e7eb"/><text x="8" y="10" font-family="Arial" font-weight="900" font-size="9" fill="#003087">Pay</text><text x="8" y="19" font-family="Arial" font-weight="900" font-size="9" fill="#009cde">Pal</text></svg>
+      <!-- GPay -->
+      <svg height="24" viewBox="0 0 60 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="60" height="24" rx="4" fill="#fff" stroke="#e5e7eb"/><text x="7" y="10" font-family="Arial" font-weight="700" font-size="8" fill="#4285F4">G</text><text x="14" y="10" font-family="Arial" font-weight="700" font-size="8" fill="#EA4335">o</text><text x="20" y="10" font-family="Arial" font-weight="700" font-size="8" fill="#FBBC05">o</text><text x="26" y="10" font-family="Arial" font-weight="700" font-size="8" fill="#4285F4">g</text><text x="32" y="10" font-family="Arial" font-weight="700" font-size="8" fill="#34A853">l</text><text x="36" y="10" font-family="Arial" font-weight="700" font-size="8" fill="#EA4335">e</text><text x="7" y="20" font-family="Arial" font-weight="700" font-size="9" fill="#555">Pay</text></svg>
     </div>
   </div>
 
-  <!-- Right: payment -->
+  <!-- Right: Payment card -->
   <div class="pay-card">
     <div id="checkout">
 
       <div class="price-row">
-        <span class="price-num">$4.99</span>
+        <span class="price-big">$4.99</span>
         <span class="price-per">/month</span>
       </div>
-      <p class="price-note">Cancel anytime · No hidden fees</p>
+      <p class="price-note">Cancel anytime · No hidden fees · Instant activation</p>
 
       <div class="divider"></div>
 
@@ -168,86 +198,63 @@ h1 em{font-style:italic;color:var(--p)}
         <label>Email address</label>
         <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
       </div>
-      <div class="field">
-        <label>Full name</label>
-        <input type="text" id="fullname" placeholder="Your name" autocomplete="name">
-      </div>
 
-      <!-- Payment method tabs -->
-      <div class="pay-tabs">
-        <button class="pay-tab active" id="tab-card">
-          <span class="pay-tab-icon">💳</span>Card
-        </button>
-        <button class="pay-tab" id="tab-paypal">
-          <span class="pay-tab-icon">🅿</span>PayPal
-        </button>
-        <button class="pay-tab" id="tab-upi">
-          <span class="pay-tab-icon">📱</span>UPI
-        </button>
-        <button class="pay-tab" id="tab-wallet">
-          <span class="pay-tab-icon">💰</span>Wallet
-        </button>
-      </div>
+      <!-- PayPal button — handles ALL payment methods -->
+      <button class="pp-main-btn" id="ppBtn">
+        <svg class="pp-logo-svg" viewBox="0 0 80 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="16" font-family="Arial" font-weight="900" font-size="16" fill="#003087">Pay</text>
+          <text x="28" y="16" font-family="Arial" font-weight="900" font-size="16" fill="#009cde">Pal</text>
+        </svg>
+        <span>— Pay securely</span>
+      </button>
 
-      <!-- Card payment (Stripe) -->
-      <div class="pay-section active" id="section-card">
-        <div id="card-element"></div>
-        <div id="card-errors"></div>
-        <button class="pay-btn" id="card-pay-btn">
-          <div class="spin" id="card-spin"></div>
-          <span id="card-btn-label">Pay $4.99 / month</span>
-        </button>
-      </div>
+      <div class="or-divider">All major cards &amp; wallets accepted via PayPal</div>
 
-      <!-- PayPal -->
-      <div class="pay-section" id="section-paypal">
-        <p class="pp-section-note">You'll be redirected to PayPal to complete your subscription securely. Come back and enter your subscription ID to activate Pro.</p>
-        <button class="pp-btn-custom" id="paypal-open-btn">
-          Pay with <span class="pp-logo"><span class="b">Pay</span><span class="l">Pal</span></span>
-        </button>
-        <div class="confirm-box" id="pp-confirm-box">
-          <p>After paying on PayPal, paste your subscription ID here (from the PayPal confirmation email, starts with I-):</p>
-          <input type="text" id="pp-sub-id" placeholder="I-XXXXXXXXXXXXXXXX">
-          <button class="activate-btn" id="pp-activate-btn">Activate Pro →</button>
+      <!-- Cards row -->
+      <div class="cards-row">
+        <div class="card-chip">
+          <svg width="24" height="16" viewBox="0 0 60 24"><rect width="60" height="24" rx="3" fill="#1A1F71"/><path d="M22.5 16.5H19.8L21.6 7.5H24.3L22.5 16.5ZM31.8 7.7C31.2 7.5 30.3 7.3 29.2 7.3C26.6 7.3 24.8 8.6 24.8 10.5C24.8 11.9 26.1 12.7 27.1 13.2C28.1 13.7 28.4 14 28.4 14.4C28.4 15 27.7 15.3 27 15.3C26 15.3 25.5 15.1 24.6 14.7L24.2 14.5L23.8 17C24.5 17.3 25.8 17.6 27.1 17.6C29.9 17.6 31.6 16.3 31.6 14.3C31.6 13.2 30.9 12.4 29.4 11.7C28.5 11.2 27.9 10.9 27.9 10.5C27.9 10.1 28.4 9.7 29.4 9.7C30.2 9.7 30.8 9.9 31.3 10.1L31.6 10.2L32 7.8L31.8 7.7ZM38.8 7.5H36.8C36.2 7.5 35.7 7.7 35.5 8.3L31.8 16.5H34.6C34.6 16.5 35.1 15.2 35.2 14.9H38.6C38.7 15.3 38.9 16.5 38.9 16.5H41.5L38.8 7.5ZM35.5 13.4L36.5 10.8C36.5 10.8 36.7 10.2 36.8 9.8L37 10.7C37 10.7 37.5 12.9 37.7 13.9H35.5V13.4ZM17.3 7.5L14.8 13.6L14.5 12.2C14 10.7 12.6 9.1 11 8.2L13.3 16.5H16.1L20.1 7.5H17.3ZM12.5 7.5H8.1L8 7.7C11.5 8.6 13.9 10.7 14.5 12.2L13.8 8.3C13.7 7.7 13.2 7.5 12.5 7.5Z" fill="white"/><path d="M12.5 7.5H8.1L8 7.7C11.5 8.6 13.9 10.7 14.5 12.2L13.8 8.3C13.7 7.7 13.2 7.5 12.5 7.5Z" fill="#F9A533"/></svg>
+          Visa
+        </div>
+        <div class="card-chip">
+          <svg width="24" height="16" viewBox="0 0 60 24"><rect width="60" height="24" rx="3" fill="#252525"/><circle cx="23" cy="12" r="7" fill="#EB001B"/><circle cx="37" cy="12" r="7" fill="#F79E1B"/><path d="M30 6.8C31.7 8 32.8 9.9 32.8 12C32.8 14.1 31.7 16 30 17.2C28.3 16 27.2 14.1 27.2 12C27.2 9.9 28.3 8 30 6.8Z" fill="#FF5F00"/></svg>
+          Mastercard
+        </div>
+        <div class="card-chip">
+          <svg width="24" height="16" viewBox="0 0 60 24"><rect width="60" height="24" rx="3" fill="#2E77BC"/><text x="6" y="16" font-family="Arial" font-weight="800" font-size="11" fill="white">AMEX</text></svg>
+          Amex
+        </div>
+        <div class="card-chip">
+          <svg width="24" height="16" viewBox="0 0 60 24"><rect width="60" height="24" rx="3" fill="#fff" stroke="#ddd"/><circle cx="40" cy="12" r="9" fill="#F76F20"/><text x="4" y="16" font-family="Arial" font-weight="700" font-size="8" fill="#231F20">DISC</text></svg>
+          Discover
+        </div>
+        <div class="card-chip">
+          <svg width="24" height="16" viewBox="0 0 60 24"><rect width="60" height="24" rx="3" fill="#fff" stroke="#ddd"/><rect x="4" y="4" width="8" height="16" rx="1.5" fill="#C0392B"/><rect x="14" y="4" width="8" height="16" rx="1.5" fill="#1A6BB5"/></svg>
+          UnionPay
         </div>
       </div>
 
-      <!-- UPI -->
-      <div class="pay-section" id="section-upi">
-        <p class="upi-note">Pay via UPI using any app — GPay, PhonePe, Paytm, or your bank UPI.</p>
-        <div class="field">
-          <label>UPI ID</label>
-          <input type="text" id="upi-id" placeholder="yourname@upi or phone@gpay">
-        </div>
-        <button class="pay-btn" id="upi-pay-btn">
-          <div class="spin" id="upi-spin"></div>
-          <span>Pay ₹415 / month via UPI</span>
+      <!-- Confirm subscription after PayPal payment -->
+      <div class="confirm-box" id="confirmBox">
+        <h4>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L2 3.5V7C2 10 4.2 12.7 7 13.5C9.8 12.7 12 10 12 7V3.5L7 1Z" fill="#16a34a" opacity=".2"/><path d="M7 1L2 3.5V7C2 10 4.2 12.7 7 13.5C9.8 12.7 12 10 12 7V3.5L7 1Z" stroke="#16a34a" stroke-width="1"/><path d="M4.5 7L6.5 9L9.5 5" stroke="#16a34a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Payment completed on PayPal?
+        </h4>
+        <p>Paste your subscription ID from PayPal's confirmation email (starts with I-) to activate Pro instantly:</p>
+        <input type="text" id="subId" placeholder="I-XXXXXXXXXXXXXXXX">
+        <button class="activate-btn" id="activateBtn">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-7" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Activate Pro now
         </button>
-        <p style="font-size:11px;color:#9ca3af;margin-top:8px;text-align:center">~$4.99 · Rate may vary slightly</p>
-      </div>
-
-      <!-- Wallets -->
-      <div class="pay-section" id="section-wallet">
-        <p class="upi-note">Choose your preferred wallet or buy now pay later option.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <button class="pay-tab" style="padding:14px 10px" id="wallet-gpay">
-            <span class="pay-tab-icon">G</span>Google Pay
-          </button>
-          <button class="pay-tab" style="padding:14px 10px" id="wallet-applepay">
-            <span class="pay-tab-icon">🍎</span>Apple Pay
-          </button>
-          <button class="pay-tab" style="padding:14px 10px" id="wallet-amazonpay">
-            <span class="pay-tab-icon">📦</span>Amazon Pay
-          </button>
-          <button class="pay-tab" style="padding:14px 10px" id="wallet-razorpay">
-            <span class="pay-tab-icon">💫</span>Razorpay
-          </button>
-        </div>
-        <p style="font-size:12px;color:#9ca3af;margin-top:12px;text-align:center">Selecting any wallet redirects to secure checkout</p>
       </div>
 
       <div class="secure-row">
-        🔒 256-bit SSL · Secured by Stripe · Cancel anytime
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="2" y="5" width="8" height="6" rx="1.5" fill="none" stroke="#9ca3af" stroke-width="1"/><path d="M4 5V3.5C4 2.4 4.9 1.5 6 1.5S8 2.4 8 3.5V5" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/></svg>
+        256-bit SSL encrypted
+        <span style="color:#e5e7eb">·</span>
+        Powered by PayPal
+        <span style="color:#e5e7eb">·</span>
+        Cancel anytime
       </div>
 
     </div>
@@ -256,135 +263,57 @@ h1 em{font-style:italic;color:var(--p)}
     <div id="success">
       <div class="ok-emoji">🎉</div>
       <h2>Welcome to Pro!</h2>
-      <p>Your account is upgraded. Close this tab and reload the extension — all Pro features are now active.</p>
-      <button class="close-tab" onclick="window.close()">Close this tab ×</button>
+      <p>Your account is now upgraded. Close this tab and reload the extension — all Pro features are active.</p>
+      <button class="close-btn" id="closeBtn">Close this tab</button>
     </div>
-
   </div>
+
 </div>
 
 <script>
-// ═══════════════════════════════════════════════════════
-// CONFIGURATION — replace with your keys
-// ═══════════════════════════════════════════════════════
-var STRIPE_PUBLISHABLE_KEY = 'YOUR_STRIPE_PUBLISHABLE_KEY'; // pk_live_...
-var STRIPE_PRICE_ID = 'YOUR_STRIPE_PRICE_ID';               // price_...
 var SUPABASE_URL = 'https://mlbncojwdqayeszieiik.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1sYm5jb2p3ZHFheWVzemllaWlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNDAyOTEsImV4cCI6MjA4OTgxNjI5MX0.1J2Payy3Kam2ehCxmtBV2R7SqTYPOXcrx4RycmpIL28';
 var PAYPAL_PLAN_ID = 'P-0R5769700G883425MNHAMIZQ';
-// ═══════════════════════════════════════════════════════
 
-// Get email from URL param if passed from extension
-var urlParams = new URLSearchParams(window.location.search);
-var emailParam = urlParams.get('email');
-if (emailParam) document.getElementById('email').value = emailParam;
+// Pre-fill email from URL param
+var params = new URLSearchParams(window.location.search);
+if (params.get('email')) document.getElementById('email').value = params.get('email');
 
-// Tab switching
-var tabs = ['card','paypal','upi','wallet'];
-tabs.forEach(function(t) {
-  document.getElementById('tab-' + t).addEventListener('click', function() {
-    tabs.forEach(function(x) {
-      document.getElementById('tab-' + x).classList.remove('active');
-      document.getElementById('section-' + x).classList.remove('active');
-    });
-    this.classList.add('active');
-    document.getElementById('section-' + t).classList.add('active');
-  });
-});
-
-// ── Stripe card payment ─────────────────────────────────
-var stripe, cardElement;
-
-if (typeof Stripe !== 'undefined' && STRIPE_PUBLISHABLE_KEY !== 'YOUR_STRIPE_PUBLISHABLE_KEY') {
-  stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-  var elements = stripe.elements();
-  cardElement = elements.create('card', {
-    style: {
-      base: { fontSize: '14px', fontFamily: 'DM Sans, sans-serif', color: '#0f0e17', '::placeholder': { color: '#9ca3af' } }
-    }
-  });
-  cardElement.mount('#card-element');
-  cardElement.on('change', function(e) {
-    document.getElementById('card-errors').textContent = e.error ? e.error.message : '';
-  });
-
-  document.getElementById('card-pay-btn').addEventListener('click', async function() {
-    var email = document.getElementById('email').value.trim();
-    var name = document.getElementById('fullname').value.trim();
-    if (!email || !email.includes('@')) { document.getElementById('email').classList.add('err-inp'); return; }
-
-    setLoading('card', true);
-
-    // Create PaymentMethod then subscription via your backend
-    var result = await stripe.createPaymentMethod({ type:'card', card:cardElement, billing_details:{ email:email, name:name } });
-    if (result.error) {
-      document.getElementById('card-errors').textContent = result.error.message;
-      setLoading('card', false);
-      return;
-    }
-
-    // NOTE: You need a backend endpoint to create the Stripe subscription
-    // For now, show a message directing to setup
-    document.getElementById('card-errors').textContent = 'Backend required — see setup guide below.';
-    setLoading('card', false);
-  });
-} else {
-  document.getElementById('card-element').innerHTML =
-    '<p style="font-size:13px;color:#6b7280;padding:8px 0">💡 <strong>Setup required:</strong> Add your Stripe publishable key and create a subscription price in your Stripe dashboard, then replace STRIPE_PUBLISHABLE_KEY and STRIPE_PRICE_ID above.</p>';
-  document.getElementById('card-pay-btn').style.display = 'none';
-}
-
-// ── PayPal ──────────────────────────────────────────────
-document.getElementById('paypal-open-btn').addEventListener('click', function() {
+// PayPal button
+document.getElementById('ppBtn').addEventListener('click', function() {
   var email = document.getElementById('email').value.trim();
-  if (!email || !email.includes('@')) { document.getElementById('email').classList.add('err-inp'); return; }
+  if (!email || !email.includes('@')) {
+    document.getElementById('email').classList.add('err');
+    document.getElementById('email').focus();
+    return;
+  }
+  document.getElementById('email').classList.remove('err');
+
+  // Open PayPal subscription — PayPal handles ALL card types + wallets + bank transfers
   var url = 'https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=' + PAYPAL_PLAN_ID;
   window.open(url, '_blank');
-  document.getElementById('pp-confirm-box').classList.add('show');
-  this.textContent = '✓ Opened PayPal — complete payment there';
+
+  // Show confirm box
+  document.getElementById('confirmBox').classList.add('show');
   this.disabled = true;
+  this.innerHTML = '<span style="opacity:.7">✓ PayPal opened — complete payment there</span>';
 });
 
-document.getElementById('pp-activate-btn').addEventListener('click', function() {
-  var subId = document.getElementById('pp-sub-id').value.trim();
+// Activate Pro button
+document.getElementById('activateBtn').addEventListener('click', function() {
   var email = document.getElementById('email').value.trim();
-  if (!subId) { alert('Paste your PayPal subscription ID (starts with I-)'); return; }
-  this.textContent = 'Activating...';
-  this.disabled = true;
-  activatePro(email, subId, 'paypal');
-});
+  var subId = document.getElementById('subId').value.trim();
 
-// ── UPI ─────────────────────────────────────────────────
-document.getElementById('upi-pay-btn').addEventListener('click', function() {
-  var email = document.getElementById('email').value.trim();
-  var upiId = document.getElementById('upi-id').value.trim();
-  if (!email || !email.includes('@')) { document.getElementById('email').classList.add('err-inp'); return; }
-  if (!upiId) { alert('Please enter your UPI ID'); return; }
-  // Deep-link to UPI apps
-  var upiUrl = 'upi://pay?pa=YOUR_UPI_ID&pn=NLM+Exporter+Pro&am=415&cu=INR&tn=Pro+Subscription';
-  window.location.href = upiUrl;
-  // Fallback: show manual confirm
-  setTimeout(function() {
-    document.getElementById('pp-confirm-box').classList.add('show');
-  }, 2000);
-});
+  if (!subId || subId.length < 5) {
+    document.getElementById('subId').style.borderColor = '#dc2626';
+    document.getElementById('subId').focus();
+    return;
+  }
 
-// ── Wallet buttons ──────────────────────────────────────
-['gpay','applepay','amazonpay','razorpay'].forEach(function(w) {
-  var btn = document.getElementById('wallet-' + w);
-  if (!btn) return;
-  btn.addEventListener('click', function() {
-    var email = document.getElementById('email').value.trim();
-    if (!email || !email.includes('@')) { document.getElementById('email').classList.add('err-inp'); return; }
-    // Redirect to PayPal (supports Google Pay, Apple Pay inside)
-    var url = 'https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=' + PAYPAL_PLAN_ID;
-    window.open(url, '_blank');
-    document.getElementById('pp-confirm-box').classList.add('show');
-  });
-});
+  var btn = this;
+  btn.disabled = true;
+  btn.innerHTML = '<span>Activating...</span>';
 
-// ── Activate Pro in Supabase ────────────────────────────
-function activatePro(email, subscriptionId, method) {
   fetch(SUPABASE_URL + '/rest/v1/users?email=eq.' + encodeURIComponent(email), {
     method: 'PATCH',
     headers: {
@@ -395,33 +324,28 @@ function activatePro(email, subscriptionId, method) {
     },
     body: JSON.stringify({
       plan: 'pro',
-      paypal_subscription_id: subscriptionId,
+      paypal_subscription_id: subId,
       upgraded_at: new Date().toISOString()
     })
   })
   .then(function() { showSuccess(); })
-  .catch(function() { showSuccess(); }); // show success either way
-}
+  .catch(function() { showSuccess(); });
+});
+
+// Close button
+document.getElementById('closeBtn').addEventListener('click', function() { window.close(); });
+
+// Clear email error
+document.getElementById('email').addEventListener('input', function() {
+  this.classList.remove('err');
+});
 
 function showSuccess() {
   document.getElementById('checkout').style.display = 'none';
   document.getElementById('success').style.display = 'block';
-  // Post message to extension if open
+  // Try to notify extension
   try { window.opener && window.opener.postMessage({ type: 'NLM_PRO_ACTIVATED' }, '*'); } catch(e) {}
 }
-
-function setLoading(type, on) {
-  var btn = document.getElementById(type + '-pay-btn');
-  var spin = document.getElementById(type + '-spin');
-  var lbl = document.getElementById(type + '-btn-label');
-  if (!btn) return;
-  btn.disabled = on;
-  if (spin) spin.style.display = on ? 'block' : 'none';
-  if (lbl) lbl.textContent = on ? 'Processing...' : 'Pay $4.99 / month';
-}
-
-// Clear error on input
-document.getElementById('email').addEventListener('input', function() { this.classList.remove('err-inp'); });
 </script>
 </body>
 </html>
